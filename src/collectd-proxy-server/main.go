@@ -1,7 +1,7 @@
 package main
 
 import (
-	lib "collectd-proxy-lib"
+	lib "github.com/miquelruiz/collectd-proxy/src/collectd-proxy-lib"
 	"log"
 	"net"
 	"net/http"
