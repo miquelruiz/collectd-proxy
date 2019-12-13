@@ -6,12 +6,11 @@ import (
 	"log"
 	"net"
 	"net/http"
+  lib "collectd-proxy-lib"
 )
 
 const endpointHTTP = "http://127.0.0.1:8080/"
 const endpointUDP = "127.0.0.1:25826"
-
-type msg []byte
 
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
@@ -46,7 +45,7 @@ func main() {
 		}
 
 		// read message
-		msg := make([]byte, size)
+		msg := make(lib.Msg, size)
 		_, err = io.ReadFull(resp.Body, msg)
 		if err != nil {
 			log.Fatalln(err)

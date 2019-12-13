@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+  lib "collectd-proxy-lib"
 )
 
 const listenUDP = "127.0.0.1:25826"
@@ -13,11 +14,9 @@ const listenHTTP = "127.0.0.1:8080"
 // shouldn't be changed without additional changes in the code
 const maxMSGS = (1 << 16) - 1
 
-type msg []byte
-
-func bufferManager(in chan msg, out chan msg, dump chan int) {
+func bufferManager(in chan lib.Msg, out chan lib.Msg, dump chan int) {
 	i := uint16(0)
-	var buff [maxMSGS]msg
+	var buff [maxMSGS]lib.Msg
 
 	for {
 		select {
@@ -36,7 +35,7 @@ func bufferManager(in chan msg, out chan msg, dump chan int) {
 	}
 }
 
-func dumpMsgs(w http.ResponseWriter, c chan msg, dump chan int) {
+func dumpMsgs(w http.ResponseWriter, c chan lib.Msg, dump chan int) {
 	dump <- 0
 	for m := range c {
 		if m == nil {
@@ -52,7 +51,7 @@ func dumpMsgs(w http.ResponseWriter, c chan msg, dump chan int) {
 	}
 }
 
-func httpListener(c chan msg, dump chan int) {
+func httpListener(c chan lib.Msg, dump chan int) {
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		dumpMsgs(w, c, dump)
 	})
@@ -64,8 +63,8 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
 
 	// comm channels
-	storage := make(chan msg)
-	out := make(chan msg)
+	storage := make(chan lib.Msg)
+	out := make(chan lib.Msg)
 	dump := make(chan int)
 
 	// setup buffer manager
@@ -82,7 +81,7 @@ func main() {
 
 	log.Printf("M: Listening at udp//:%s", pc.LocalAddr())
 	for {
-		m := make(msg, 1500)
+		m := make(lib.Msg, 1500)
 		n, _, err := pc.ReadFrom(m)
 		if err != nil {
 			log.Println(err)
