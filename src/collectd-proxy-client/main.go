@@ -1,26 +1,29 @@
 package main
 
 import (
+	lib "collectd-proxy-lib"
 	"encoding/binary"
 	"io"
 	"log"
 	"net"
 	"net/http"
-  lib "collectd-proxy-lib"
 )
-
-const endpointHTTP = "http://127.0.0.1:8080/"
-const endpointUDP = "127.0.0.1:25826"
 
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
-	resp, err := http.Get(endpointHTTP)
+
+	config, err := lib.GetConfig("/etc/collectd-proxy-client.conf")
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
+	}
+
+	resp, err := http.Get(config.HTTPAddress)
+	if err != nil {
+		log.Fatalf("Failed to connect to '%s': %s", config.HTTPAddress, err)
 	}
 	defer resp.Body.Close()
 
-	send, err := net.Dial("udp", endpointUDP)
+	send, err := net.Dial("udp", config.UDPAddress)
 	if err != nil {
 		log.Fatalln(err)
 	}

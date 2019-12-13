@@ -1,14 +1,11 @@
 package main
 
 import (
+	lib "collectd-proxy-lib"
 	"log"
 	"net"
 	"net/http"
-  lib "collectd-proxy-lib"
 )
-
-const listenUDP = "127.0.0.1:25826"
-const listenHTTP = "127.0.0.1:8080"
 
 // 16 bits counters are used to reference the buffer of messages, so this
 // shouldn't be changed without additional changes in the code
@@ -51,16 +48,21 @@ func dumpMsgs(w http.ResponseWriter, c chan lib.Msg, dump chan int) {
 	}
 }
 
-func httpListener(c chan lib.Msg, dump chan int) {
+func httpListener(address string, c chan lib.Msg, dump chan int) {
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		dumpMsgs(w, c, dump)
 	})
-	log.Printf("H: Listening at http://%s", listenHTTP)
-	log.Fatal(http.ListenAndServe(listenHTTP, nil))
+	log.Printf("H: Listening at http://%s", address)
+	log.Fatal(http.ListenAndServe(address, nil))
 }
 
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
+
+	config, err := lib.GetConfig("/etc/collectd-proxy-server.conf")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// comm channels
 	storage := make(chan lib.Msg)
@@ -71,10 +73,10 @@ func main() {
 	go bufferManager(storage, out, dump)
 
 	// setup http listener
-	go httpListener(out, dump)
+	go httpListener(config.HTTPAddress, out, dump)
 
 	// setup udp listener
-	pc, err := net.ListenPacket("udp", listenUDP)
+	pc, err := net.ListenPacket("udp", config.UDPAddress)
 	if err != nil {
 		log.Fatalln(err)
 	}
