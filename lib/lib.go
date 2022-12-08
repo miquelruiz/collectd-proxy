@@ -1,4 +1,4 @@
-package collectdproxylib
+package lib
 
 import (
 	"encoding/json"

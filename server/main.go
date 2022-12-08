@@ -1,10 +1,10 @@
 package main
 
 import (
-	lib "github.com/miquelruiz/collectd-proxy/src/collectd-proxy-lib"
 	"log"
 	"net"
 	"net/http"
+	"github.com/miquelruiz/collectd-proxy/lib"
 )
 
 // 16 bits counters are used to reference the buffer of messages, so this

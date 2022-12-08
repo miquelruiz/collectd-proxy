@@ -1,8 +1,8 @@
 package main
 
 import (
-	lib "github.com/miquelruiz/collectd-proxy/src/collectd-proxy-lib"
 	"encoding/binary"
+	"github.com/miquelruiz/collectd-proxy/lib"
 	"io"
 	"log"
 	"net"
